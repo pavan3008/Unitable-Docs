@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome file</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__left">
+    <div class="stackedit__toc">
+      
+<ul>
+<li><a href="#system-architecture-documentation">System Architecture Documentation</a>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#components">Components</a></li>
+<li><a href="#rag-pipeline">RAG Pipeline</a></li>
+<li><a href="#system-architecture-diagram">System Architecture Diagram</a></li>
+<li><a href="#data-flow">Data Flow</a></li>
+<li><a href="#error-handling">Error Handling</a></li>
+<li><a href="#scalability-and-performance">Scalability and Performance</a></li>
+<li><a href="#security-measures">Security Measures</a></li>
+</ul>
+</li>
+<li><a href="#enchancements">Enchancements</a>
+<ul>
+<li><a href="#backend-documentation">Backend Documentation:</a></li>
+<li><a href="#fetch-recommendations-api-modification">Fetch Recommendations API Modification</a></li>
+<li><a href="#venue-bonni-api-modification">Venue Bonni API Modification</a></li>
+<li><a href="#frontend">Frontend:</a></li>
+<li><a href="#small-lms-optimization">Small LMs Optimization</a></li>
+</ul>
+</li>
+<li><a href="#questions">Questions</a>
+<ul>
+<li><a href="#guests-chatbot">Guests Chatbot</a></li>
+<li><a href="#tech-stack-for-mobile-app">Tech Stack for Mobile App</a></li>
+<li><a href="#match-criteria">95% Match Criteria</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+  </div>
+  <div class="stackedit__right">
+    <div class="stackedit__html">
+      <h1 id="system-architecture-documentation">System Architecture Documentation</h1>
+<h2 id="overview">Overview</h2>
+<p>This document outlines the server architecture for a recommendation engine, detailing the interaction between various components including databases, caches, and APIs. The system’s primary function is to generate and retrieve recommendations based on user queries.</p>
+<h2 id="components">Components</h2>
+<h3 id="postgresql">PostgreSQL</h3>
+<p><em>Purpose</em>: Serves as the primary relational database for storing persistent data.</p>
+<p><em>Interaction</em>: PostgreSQL stores user data and recommendation logic that can be retrieved during the recommendation generation process.</p>
+<h3 id="redis-cache">Redis Cache</h3>
+<p><em>Purpose</em>: Provides fast access to frequently used data through in-memory storage.</p>
+<p><em>Interaction</em>: Temporarily caches user IDs and corresponding responses to improve performance and reduce load on the primary database.</p>
+<h3 id="mongodb">MongoDB</h3>
+<p><em>Purpose</em>: Stores non-relational data such as recommendation history and logs.</p>
+<p><em>Interaction</em>: Acts as a datastore for logging all recommendation requests and responses for analytical purposes.</p>
+<h3 id="rest-api">REST API</h3>
+<p><em>Purpose</em>: Interface for client-server communication, handling user requests and responses.</p>
+<p><em>Interaction</em>: Processes incoming requests, interacts with the token generation for authentication, communicates with Redis Cache, and initiates recommendation retrieval.</p>
+<ul>
+<li><strong>Fetch Recommendations API</strong></li>
+<li><strong>Venue API</strong></li>
+</ul>
+<h3 id="token-generation">Token Generation</h3>
+<p><em>Purpose</em>: Manages user authentication and session tokens.</p>
+<p><em>Interaction</em>: Generates unique user tokens to validate session authenticity and to track recommendation requests.</p>
+<h2 id="rag-pipeline">RAG Pipeline</h2>
+<p><em>Purpose</em>: Represents the Retrieval-Augmentation-Generation process for recommendations.</p>
+<p><em>Interaction</em>: Orchestrates the workflow for fetching, enhancing, and generating user-specific recommendations.</p>
+<h3 id="output-processor">Output Processor</h3>
+<p><em>Purpose</em>: Formats the API response.</p>
+<p><em>Interaction</em>: Takes the raw data from the recommendation engine and formats it according to the API specifications before sending it to the user.</p>
+<h2 id="system-architecture-diagram">System Architecture Diagram</h2>
+<p><a href="https://drive.google.com/file/d/14SwdDBct-V9er2L9xiV5MTmgrKQ8ZR8j/view">https://drive.google.com/file/d/14SwdDBct-V9er2L9xiV5MTmgrKQ8ZR8j/view</a></p>
+<h2 id="data-flow">Data Flow</h2>
+<ol>
+<li><em>Client Request</em>: The user initiates a request to the server via the REST API.</li>
+<li><em>Token Validation</em>: The REST API interacts with the token generation service to authenticate the request.</li>
+<li><em>Data Retrieval</em>: Depending on the cache status, the request is routed to either Redis Cache or the PostgreSQL database.</li>
+<li><em>RAG Pipeline</em>: The recommendation logic is processed through the RAG pipeline to generate a tailored recommendation.</li>
+<li><em>Data Storage</em>: The recommendation and user interaction are logged into MongoDB for tracking and analytical purposes.</li>
+<li><em>Response Formatting</em>: The output processor formats the recommendation data.</li>
+<li><em>Client Response</em>: The REST API sends the formatted recommendation back to the client.</li>
+</ol>
+<h2 id="error-handling">Error Handling</h2>
+<p>The system has robust error handling at each component level to ensure stability and to provide meaningful feedback to the user in case of failure.</p>
+<h2 id="scalability-and-performance">Scalability and Performance</h2>
+<p>Each component is designed to scale horizontally to handle increased load. The use of Redis Cache and asynchronous processing ensures high performance and low latency.</p>
+<h2 id="security-measures">Security Measures</h2>
+<p>The system implements industry-standard security practices including encrypted tokens, secure data transfer, and regular audits to protect user data and system integrity.</p>
+<h1 id="enchancements">Enchancements</h1>
+<h2 id="backend-documentation">Backend Documentation:</h2>
+<h2 id="fetch-recommendations-api-modification">Fetch Recommendations API Modification</h2>
+<p>The Fetch Recommendations API should be updated to include percentage matches. This involves modifying the algorithm to calculate these matches. Below is a guide on how to achieve this:</p>
+<h3 id="calculation-of-percentage-matches">Calculation of Percentage Matches</h3>
+<ul>
+<li>Define the criteria for matching.</li>
+<li>Assign weights to each criterion based on its importance.</li>
+<li>Compare user preferences with available options.</li>
+<li>Calculate a percentage match using the weighted criteria.</li>
+</ul>
+<h3 id="algorithm-building">Algorithm Building</h3>
+<ol>
+<li>Define the input parameters (user preferences and available options).</li>
+<li>Implement the matching algorithm using the defined criteria and weights.</li>
+<li>Test the algorithm with various scenarios to ensure accuracy.</li>
+<li>Optimize the algorithm for efficiency and computational performance.</li>
+</ol>
+<h2 id="venue-bonni-api-modification">Venue Bonni API Modification</h2>
+<p>Consider revamping the Venue Bonni API. Evaluate the current functionality and make necessary improvements. This may involve enhancing performance, updating features, and ensuring compatibility with the overall system.</p>
+<h2 id="frontend">Frontend:</h2>
+<h3 id="native-or-multiplatform">Native or Multiplatform?</h3>
+<p>Decide whether to develop the frontend using native frameworks (e.g., Swift for iOS, Kotlin for Android) or opt for a multiplatform solution (e.g., Flutter, React Native). Consider factors such as development speed, performance, and platform-specific requirements.</p>
+<h2 id="small-lms-optimization">Small LMs Optimization</h2>
+<p>To optimize the use of Small LMs (Language Models):</p>
+<ul>
+<li>Evaluate the need for using smaller LMs instead of Open AI.</li>
+<li>Consider alternatives for more efficiency and computational optimization.</li>
+<li>Implement LlamaV2 or LangChain for better performance.</li>
+</ul>
+<h1 id="questions">Questions</h1>
+<h2 id="guests-chatbot">Guests Chatbot</h2>
+<ul>
+<li>The initial implementation is a closed-ended chatbot. Decide on the approach for user interactions. Consider making it more sophisticated and controlled, especially if users may not provide all information in a single message.</li>
+</ul>
+<h2 id="tech-stack-for-mobile-app">Tech Stack for Mobile App</h2>
+<ul>
+<li>Define the technology stack for the mobile app. Consider frameworks, programming languages, and tools suitable for mobile development.</li>
+</ul>
+<h2 id="match-criteria">95% Match Criteria</h2>
+<ul>
+<li>Clarify whether the 95% match criteria are sourced from a third party or if Unitable is responsible for determining the match percentage. Determine if any additional algorithms need to be developed after initial messages to achieve the specified match percentage.</li>
+</ul>
+<p>*<em>Additional Questions to be discussed</em></p>
+
+    </div>
+  </div>
+</body>
+
+</html>
